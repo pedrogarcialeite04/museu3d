@@ -1,0 +1,100 @@
+/* Vinheta de dano */
+#vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 240px 100px rgba(255, 40, 40, 0.7);
+  opacity: 0;
+  transition: opacity 0.12s ease-out;
+  mix-blend-mode: multiply;
+}
+
+/* Kill feed */
+#killFeed {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+#killFeed .entry {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  border-radius: 3px;
+  border-left: 2px solid var(--color-danger);
+  letter-spacing: 1px;
+  animation: kfin 0.3s ease-out;
+}
+
+#killFeed .entry.headshot {
+  border-left-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+@keyframes kfin {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Ajuda rápida (rodapé) */
+#help {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 14px;
+  border-radius: 3px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+#help b {
+  color: #fff;
+}
+
+/* Tela de morte */
+#deadScreen {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 0, 0, 0.55);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-danger);
+  text-align: center;
+  z-index: 5;
+}
+
+#deadScreen.show {
+  display: flex;
+}
+
+#deadScreen h2 {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-shadow: 0 0 28px rgba(255, 40, 40, 0.5);
+}
+
+#deadScreen .sub {
+  color: #ddd;
+  font-size: 13px;
+  margin-top: 10px;
+  letter-spacing: 2px;
+}

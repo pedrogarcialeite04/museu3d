@@ -1,0 +1,21 @@
+import { THREE } from './three.js';
+
+export const _fwd = new THREE.Vector3();
+export const _right = new THREE.Vector3();
+export const _wishDir = new THREE.Vector3();
+export const _horiz = new THREE.Vector3();
+export const _tmp = new THREE.Vector3();
+export const _playerMin = new THREE.Vector3();
+export const _playerMax = new THREE.Vector3();
+export const _playerBox = new THREE.Box3(_playerMin, _playerMax);
+export const _cameraEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+export const _camForward = new THREE.Vector3();
+export const _camRight = new THREE.Vector3();
+export const _camUp = new THREE.Vector3();
+export const _rayOrigin = new THREE.Vector3();
+export const _rayDir = new THREE.Vector3();
+export const _hitPoint = new THREE.Vector3();
+export const _muzzleWorld = new THREE.Vector3();
+export const _qHelper = new THREE.Quaternion();
+export const _weaponPos = new THREE.Vector3();
+export const _weaponRot = new THREE.Euler();

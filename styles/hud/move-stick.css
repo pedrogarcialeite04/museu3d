@@ -1,0 +1,46 @@
+#moveStick {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  width: 128px;
+  height: 128px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#moveStick .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(4px);
+}
+
+#moveStick .knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: rgba(255, 155, 58, 0.35);
+  border: 2px solid rgba(255, 155, 58, 0.75);
+  box-shadow: 0 0 14px rgba(255, 155, 58, 0.25);
+  transform: translate(-50%, -50%);
+  transition: background 0.08s, border-color 0.08s;
+}
+
+#moveStick.active .knob {
+  background: rgba(255, 155, 58, 0.55);
+  border-color: #ff9b3a;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #moveStick {
+    opacity: 0.72;
+  }
+}

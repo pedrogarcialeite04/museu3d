@@ -1,0 +1,16 @@
+/**
+ * TacticalFPS — folha de estilos principal
+ * Importa tokens, base e módulos da HUD (mesmo visual do index.html original).
+ */
+@import url('variables.css');
+@import url('base.css');
+@import url('hud/lock-overlay.css');
+@import url('hud/stats.css');
+@import url('hud/crosshair.css');
+@import url('hud/ads.css');
+@import url('hud/hitmarker.css');
+@import url('hud/hp-ammo.css');
+@import url('hud/weapon-slots.css');
+@import url('hud/misc.css');
+@import url('hud/move-stick.css');
+@import url('hud/project-popup.css');

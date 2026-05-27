@@ -1,0 +1,62 @@
+/* Mira dinâmica (abre com movimento / recuo) */
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  margin: -50px 0 0 -50px;
+  pointer-events: none;
+  --gap: var(--crosshair-gap);
+}
+
+#crosshair .dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  background: var(--color-crosshair);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.95);
+}
+
+#crosshair .ln {
+  position: absolute;
+  background: var(--color-crosshair);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.95);
+}
+
+#crosshair .ln.t {
+  top: calc(50% - var(--gap) - 7px);
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 7px;
+}
+
+#crosshair .ln.b {
+  top: calc(50% + var(--gap));
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 7px;
+}
+
+#crosshair .ln.l {
+  top: calc(50% - 1px);
+  left: calc(50% - var(--gap) - 7px);
+  width: 7px;
+  height: 2px;
+}
+
+#crosshair .ln.r {
+  top: calc(50% - 1px);
+  left: calc(50% + var(--gap));
+  width: 7px;
+  height: 2px;
+}
+
+#crosshair.ads-hidden .dot,
+#crosshair.ads-hidden .ln {
+  opacity: 0;
+  transition: opacity 0.1s ease-out;
+}

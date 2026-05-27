@@ -1,0 +1,22 @@
+/* Museum Premium Welcome — synced with inline styles in index.html */
+
+body.gallery-mode #hpPanel,
+body.gallery-mode #help,
+body.gallery-mode #scrollHint,
+body.gallery-mode #crosshair,
+body.gallery-mode #ammoPanel,
+body.gallery-mode #weaponSlots,
+body.gallery-mode #hitmarker,
+body.gallery-mode #adsOverlay,
+body.gallery-mode #killFeed,
+body.gallery-mode #vignette {
+  display: none !important;
+}
+
+body.gallery-mode #stats .row:nth-child(1),
+body.gallery-mode #stats .row:nth-child(2),
+body.gallery-mode #stats .row:nth-child(5),
+body.gallery-mode #stats .row:nth-child(6),
+body.gallery-mode #stats .row:nth-child(7) {
+  display: none;
+}

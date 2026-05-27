@@ -1,0 +1,97 @@
+/* Vida e munição */
+#hpPanel {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  min-width: 220px;
+  font-family: var(--font-mono);
+}
+
+#hpPanel .label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--color-text-dim);
+  margin-bottom: 4px;
+}
+
+#hpBar {
+  position: relative;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+}
+
+#hpFill {
+  position: absolute;
+  inset: 0;
+  right: auto;
+  width: 100%;
+  background: linear-gradient(90deg, #ff4444, #ff9b3a 50%, #5cd665 100%);
+  transition: width 0.15s ease-out;
+}
+
+#hpText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+#ammoPanel {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+#ammoPanel .label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--color-text-dim);
+  margin-bottom: 2px;
+}
+
+#ammoMain {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+#ammoMain.low {
+  color: var(--color-danger);
+}
+
+#ammoReserve {
+  font-size: 14px;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+#ammoReload {
+  font-size: 11px;
+  color: var(--color-accent);
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+#ammoReload.show {
+  opacity: 1;
+}
+
+#ammoPanel.hidden {
+  opacity: 0.25;
+  pointer-events: none;
+}

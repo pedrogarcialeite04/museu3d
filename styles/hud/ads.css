@@ -1,0 +1,80 @@
+/* Overlay de mira (ADS — botão direito) */
+#adsOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease-out;
+}
+
+#adsOverlay.active {
+  opacity: 1;
+}
+
+#adsOverlay .sight-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(42vmin, 320px);
+  height: min(42vmin, 320px);
+  margin: calc(min(21vmin, 160px) * -1) 0 0 calc(min(21vmin, 160px) * -1);
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    inset 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+#adsOverlay .sight-ring::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+#adsOverlay .sight-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  background: var(--color-sight);
+  border-radius: 50%;
+  box-shadow:
+    0 0 4px var(--color-sight),
+    0 0 1px rgba(0, 0, 0, 0.9);
+}
+
+#adsOverlay .sight-post {
+  position: absolute;
+  left: 50%;
+  background: #111;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+#adsOverlay .sight-post.rear {
+  top: calc(50% + 18px);
+  width: 3px;
+  height: 14px;
+  margin-left: -1.5px;
+}
+
+#adsOverlay .sight-post.front {
+  top: calc(50% - 52px);
+  width: 2px;
+  height: 10px;
+  margin-left: -1px;
+}
+
+#adsOverlay .sight-label {
+  position: absolute;
+  top: calc(50% + min(22vmin, 168px));
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.45);
+}

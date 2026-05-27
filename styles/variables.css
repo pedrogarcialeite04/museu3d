@@ -1,0 +1,13 @@
+:root {
+  --color-bg: #000;
+  --color-text: #eee;
+  --color-text-muted: #aaa;
+  --color-text-dim: #888;
+  --color-accent: #ff9b3a;
+  --color-danger: #ff4444;
+  --color-crosshair: #ffffff;
+  --color-sight: #ff3a2a;
+  --font-ui: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, Menlo, Consolas, monospace;
+  --crosshair-gap: 4px;
+}

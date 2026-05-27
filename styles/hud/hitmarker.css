@@ -1,0 +1,48 @@
+/* Indicador de acerto */
+#hitmarker {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.04s linear;
+}
+
+#hitmarker.show {
+  opacity: 1;
+}
+
+#hitmarker .hl {
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  background: var(--color-crosshair);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.95);
+}
+
+#hitmarker.headshot .hl {
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+}
+
+#hitmarker .tl {
+  top: calc(50% - 8px);
+  left: calc(50% - 14px);
+  transform: rotate(45deg);
+}
+
+#hitmarker .tr {
+  top: calc(50% - 8px);
+  left: calc(50% + 4px);
+  transform: rotate(-45deg);
+}
+
+#hitmarker .bl {
+  top: calc(50% + 6px);
+  left: calc(50% - 14px);
+  transform: rotate(-45deg);
+}
+
+#hitmarker .br {
+  top: calc(50% + 6px);
+  left: calc(50% + 4px);
+  transform: rotate(45deg);
+}

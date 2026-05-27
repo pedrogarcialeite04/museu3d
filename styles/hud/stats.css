@@ -1,0 +1,35 @@
+/* Painel de debug (canto superior esquerdo) */
+#stats {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 10px 12px;
+  border-radius: 4px;
+  line-height: 1.6;
+  min-width: 220px;
+  border-left: 2px solid var(--color-accent);
+  backdrop-filter: blur(4px);
+}
+
+#stats .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#stats .label {
+  color: var(--color-text-dim);
+}
+
+#stats .val {
+  color: #fff;
+}
+
+#stats .speed {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 14px;
+}
