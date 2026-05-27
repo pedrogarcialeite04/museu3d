@@ -38,7 +38,7 @@
     user-select: none;
   }
 
-  #hud { position: fixed; inset: 0; pointer-events: none; user-select: none; }
+  #hud { position: fixed; inset: 0; pointer-events: none; user-select: none; contain: layout style; }
 
   :root {
     --mu-gold: #c9a84c;
@@ -235,6 +235,7 @@
     opacity: 0;
     transform: translateY(-8px);
     transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    contain: content;
   }
   body.gallery-mode #galleryGuide {
     opacity: 1;
@@ -289,6 +290,7 @@
     background: linear-gradient(90deg, var(--mu-gold-dark), var(--mu-gold), var(--mu-gold-light));
     box-shadow: 0 0 10px rgba(201, 168, 76, 0.35);
     transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: width;
   }
   .gg-hint {
     font-family: var(--mu-mono);
@@ -601,6 +603,7 @@
   }
   body.project-popup-open #pp3dHint {
     opacity: 1; transform: translateX(-50%) translateY(0);
+    will-change: opacity, transform;
   }
 
   /* ---------- HUD galeria (top-left) ---------- */
@@ -613,6 +616,7 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(12px) saturate(1.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    contain: content;
   }
   #stats .row { display: flex; justify-content: space-between; gap: 20px; }
   #stats .label { color: rgba(244, 241, 234, 0.35); letter-spacing: 0.06em; }
@@ -630,9 +634,23 @@
     position: absolute; inset: 0; border-radius: 50%;
     background: rgba(255, 255, 255, 0.52);
     box-shadow: none;
-    transition: transform 0.08s ease-out, opacity 0.12s ease-out;
+    transition: transform 0.08s ease-out, opacity 0.12s ease-out, background 0.08s ease-out, box-shadow 0.08s ease-out;
+    will-change: transform, opacity;
+  }
+  #crosshair.fire-pulse .dot {
+    transform: scale(2.2);
+    background: rgba(255, 214, 120, 0.98);
+    box-shadow: 0 0 10px rgba(255, 180, 80, 0.85);
   }
   #crosshair.ads-hidden .dot { opacity: 0.12; }
+  #fireFlash {
+    position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    opacity: 0;
+    background: radial-gradient(circle at 50% 58%, rgba(255, 190, 90, 0.16), rgba(255, 140, 40, 0.04) 42%, transparent 68%);
+    transition: opacity 0.05s linear;
+    will-change: opacity;
+  }
+  #fireFlash.show { opacity: 1; }
 
   /* ---------- ADS / iron sight overlay (RMB) ---------- */
   #adsOverlay {
@@ -687,7 +705,7 @@
   #hitmarker .br { top: calc(50% + 6px); left: calc(50% +  4px); transform: rotate( 45deg); }
 
   #ammoPanel { position: absolute; right: 24px; bottom: 24px; text-align: right;
-    font-family: ui-monospace, Menlo, Consolas, monospace; }
+    font-family: ui-monospace, Menlo, Consolas, monospace; contain: content; }
   #ammoPanel .label { font-size: 10px; letter-spacing: 2px; color: #888; margin-bottom: 2px; }
   #ammoMain { font-size: 36px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: 1px;
     text-shadow: 0 2px 8px rgba(0,0,0,.7); }
@@ -720,7 +738,8 @@
   /* ---------- Damage vignette ---------- */
   #vignette { position: absolute; inset: 0; pointer-events: none;
     box-shadow: inset 0 0 240px 100px rgba(255,40,40,0.7);
-    opacity: 0; transition: opacity .12s ease-out; mix-blend-mode: multiply; }
+    opacity: 0; transition: opacity .12s ease-out; mix-blend-mode: multiply;
+    will-change: opacity; }
 
   /* ---------- Kill feed ---------- */
   #killFeed { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column;
@@ -850,6 +869,17 @@
   #galleryFire:active .gallery-fire-icon {
     background: radial-gradient(circle at 35% 30%, rgba(240, 221, 176, 0.34), rgba(201, 168, 76, 0.16) 55%, rgba(110, 84, 32, 0.18));
     box-shadow: 0 0 22px rgba(201, 168, 76, 0.24);
+  }
+  #galleryFire.fire-pulse {
+    border-color: rgba(255, 214, 120, 0.92);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+      0 10px 28px rgba(0, 0, 0, 0.45),
+      0 0 32px rgba(255, 180, 80, 0.34);
+  }
+  #galleryFire.fire-pulse .gallery-fire-icon {
+    transform: scale(1.1);
+    box-shadow: 0 0 24px rgba(255, 180, 80, 0.35);
   }
   body.museum-live.platform-mobile #galleryFire,
   body.museum-live.platform-touch #galleryFire {
@@ -1198,6 +1228,7 @@
     </div>
 
     <div id="crosshair"><div class="dot"></div></div>
+    <div id="fireFlash" aria-hidden="true"></div>
     <p id="pp3dHint" aria-live="polite">Atire no prédio para abrir o painel</p>
 
     <div id="adsOverlay" aria-hidden="true">
@@ -2328,7 +2359,7 @@ function matSurface(base, renderOrder, polyFactor) {
 
 function tagSurfaceMesh(mesh, renderOrder) {
   mesh.renderOrder = renderOrder;
-  mesh.frustumCulled = false;
+  mesh.frustumCulled = true;
   mesh.layers.set(WORLD_LAYER);
 }
 
@@ -2528,6 +2559,7 @@ function addGroundPlane() {
   mesh.position.y = ROAD.groundY;
   mesh.receiveShadow = true;
   tagSurfaceMesh(mesh, 0);
+  mesh.frustumCulled = false;
   scene.add(mesh);
   colliders.push(new THREE.Box3(
     new THREE.Vector3(-size / 2, ROAD.groundY - 2, -size / 2),
@@ -2593,6 +2625,10 @@ const GALLERY = {
   duration: 1.35,
   scrollCooldown: 0,
   scrollGap: 0.42,
+  wheelAccum: 0,
+  wheelThreshold: 96,
+  wheelArmed: true,
+  wheelIdleTimer: 0,
   from: { x: 0, y: 0.22, z: 0, yaw: 0, pitch: 0 },
   to:   { x: 0, y: 0.22, z: 0, yaw: 0, pitch: 0 },
 };
@@ -2755,9 +2791,64 @@ function beginGalleryTransition(targetIdx) {
   GALLERY.index = targetIdx;
   GALLERY.transitioning = true;
   GALLERY.t = 0;
-  GALLERY.scrollCooldown = GALLERY.scrollGap;
+  GALLERY.scrollCooldown = GALLERY.duration;
+  GALLERY.wheelAccum = 0;
+  GALLERY.wheelArmed = false;
   player.vel.set(0, 0, 0);
   hideProjectPopup(true);
+}
+
+function resetGalleryWheelGesture() {
+  GALLERY.wheelAccum = 0;
+  GALLERY.wheelArmed = true;
+  if (GALLERY.wheelIdleTimer) {
+    clearTimeout(GALLERY.wheelIdleTimer);
+    GALLERY.wheelIdleTimer = 0;
+  }
+}
+
+function normalizeWheelDeltaY(e) {
+  let dy = e.deltaY;
+  if (e.deltaMode === 1) dy *= 16;
+  else if (e.deltaMode === 2) dy *= (window.innerHeight || 600) * 0.85;
+  return dy;
+}
+
+function canGalleryWheelNav() {
+  return worldReady && GALLERY.enabled && RUNTIME.museumLive &&
+    !projectPopupOpen && !PP3D.closing && !isMuseumOverlayVisible();
+}
+
+function galleryWheelStep(e) {
+  if (!canGalleryWheelNav()) return false;
+  if (e.cancelable) e.preventDefault();
+
+  if (GALLERY.transitioning || GALLERY.scrollCooldown > 0) {
+    GALLERY.wheelAccum = 0;
+    return true;
+  }
+
+  let dy = normalizeWheelDeltaY(e);
+  if (e.deltaMode === 0 && Math.abs(e.deltaX) > Math.abs(dy) * 1.25) return true;
+
+  if (GALLERY.wheelAccum !== 0 && (dy > 0) !== (GALLERY.wheelAccum > 0)) {
+    GALLERY.wheelAccum = 0;
+  }
+  GALLERY.wheelAccum += dy;
+
+  if (GALLERY.wheelIdleTimer) clearTimeout(GALLERY.wheelIdleTimer);
+  GALLERY.wheelIdleTimer = setTimeout(resetGalleryWheelGesture, 180);
+
+  if (!GALLERY.wheelArmed) return true;
+
+  const th = GALLERY.wheelThreshold;
+  if (Math.abs(GALLERY.wheelAccum) < th) return true;
+
+  const dir = GALLERY.wheelAccum < 0 ? 1 : -1;
+  GALLERY.wheelAccum = 0;
+  GALLERY.wheelArmed = false;
+  galleryNavigate(dir);
+  return true;
 }
 
 function galleryNavigate(dir) {
@@ -2823,8 +2914,33 @@ const PP3D = {
   light: null,
 };
 
+const PP_PANEL_CACHE = new Map();
+const PP_PANEL_PENDING = new Map();
+const PP_SCREEN_TEX_CACHE = new Map();
+let ppWarmupGen = 0;
+
 function openProjectUrl(url) {
-  if (!url || url === '#') return;
+  if (!url || url === '#') return false;
+
+  try {
+    const tab = window.open(url, '_blank', 'noopener,noreferrer');
+    if (tab) {
+      try { tab.opener = null; } catch (_) { /* ok */ }
+      return true;
+    }
+  } catch (_) { /* tenta fallback */ }
+
+  if (PLATFORM.touch) {
+    try {
+      const tab = window.open('about:blank', '_blank');
+      if (tab) {
+        try { tab.opener = null; } catch (_) { /* ok */ }
+        tab.location.href = url;
+        return true;
+      }
+    } catch (_) { /* tenta fallback */ }
+  }
+
   const link = document.createElement('a');
   link.href = url;
   link.target = '_blank';
@@ -2832,6 +2948,7 @@ function openProjectUrl(url) {
   document.body.appendChild(link);
   link.click();
   link.remove();
+  return true;
 }
 
 function setPp3dHint(text) {
@@ -3020,13 +3137,15 @@ function drawHeroTagPills(ctx, tags, x, y, maxW, maxRows, uiScale) {
 }
 
 async function makeProjectScreenTex(def, meta) {
+  if (PP_SCREEN_TEX_CACHE.has(def.name)) return PP_SCREEN_TEX_CACHE.get(def.name);
+
   let thumbImg = null;
   try {
     const t = await loadProjTex(def.image);
     if (t && t.image) thumbImg = t.image;
   } catch (e) { /* sem thumb */ }
 
-  return makeOwnedCanvasTex(VISUAL_QUALITY.panelTexW, VISUAL_QUALITY.panelTexH, function (ctx, w, h) {
+  const tex = makeOwnedCanvasTex(VISUAL_QUALITY.panelTexW, VISUAL_QUALITY.panelTexH, function (ctx, w, h) {
     const ui = w / 1024;
     const pad = 44 * ui;
     const innerW = w - pad * 2;
@@ -3151,6 +3270,96 @@ async function makeProjectScreenTex(def, meta) {
     ctx.fillText('ATIRE EM ENTRAR OU SAIR', w / 2, footY + 31 * ui);
     ctx.textAlign = 'left';
   });
+  PP_SCREEN_TEX_CACHE.set(def.name, tex);
+  return tex;
+}
+
+function preloadProjectThumb(def) {
+  if (!def || !def.image) return Promise.resolve();
+  return loadProjTex(def.image).catch(function () { /* ok */ });
+}
+
+function warmupPanelGpu(group) {
+  if (!group || !renderer) return;
+  try {
+    if (renderer.compile) renderer.compile(group, camera, scene);
+  } catch (_) { /* ok */ }
+  if (renderer.compileAsync) {
+    renderer.compileAsync(group, camera, scene).catch(function () { /* ok */ });
+  }
+}
+
+function getWarmupStationNames() {
+  const names = [];
+  const total = GALLERY.stations.length;
+  if (!total) return names;
+  const idx = GALLERY.index < 0 ? 0 : GALLERY.index;
+  for (let d = -1; d <= 1; d++) {
+    let i = idx + d;
+    if (i < 0) i = total - 1;
+    else if (i >= total) i = 0;
+    const st = getGalleryStation(i);
+    if (st && names.indexOf(st.name) < 0) names.push(st.name);
+  }
+  return names;
+}
+
+function schedulePanelWarmup(opts) {
+  opts = opts || {};
+  const gen = ++ppWarmupGen;
+  const priority = opts.names || getWarmupStationNames();
+  const seen = new Set();
+  const queue = [];
+  for (let i = 0; i < priority.length; i++) {
+    if (!seen.has(priority[i])) {
+      seen.add(priority[i]);
+      queue.push(priority[i]);
+    }
+  }
+  if (opts.includeAll !== false) {
+    for (let j = 0; j < PROJECT_BUILDINGS.length; j++) {
+      const nm = PROJECT_BUILDINGS[j].name;
+      if (!seen.has(nm)) {
+        seen.add(nm);
+        queue.push(nm);
+      }
+    }
+  }
+  if (!queue.length) return;
+
+  (async function runWarmup() {
+    for (let i = 0; i < queue.length; i++) {
+      if (gen !== ppWarmupGen) return;
+      const def = PROJECT_BUILDINGS.find(function (b) { return b.name === queue[i]; });
+      if (!def || PP_PANEL_CACHE.has(def.name)) continue;
+      try {
+        await ensurePanelCached(def);
+      } catch (_) { /* ok */ }
+      await yieldFrame();
+    }
+  })();
+}
+
+async function ensurePanelCached(def) {
+  if (!def) return null;
+  if (PP_PANEL_CACHE.has(def.name)) return PP_PANEL_CACHE.get(def.name);
+  if (PP_PANEL_PENDING.has(def.name)) return PP_PANEL_PENDING.get(def.name);
+
+  const buildPromise = (async function () {
+    await preloadProjectThumb(def);
+    const group = await buildProjectPanel(def);
+    group.userData.projectName = def.name;
+    PP_PANEL_CACHE.set(def.name, group);
+    warmupPanelGpu(group);
+    return group;
+  })();
+
+  PP_PANEL_PENDING.set(def.name, buildPromise);
+  try {
+    return await buildPromise;
+  } finally {
+    PP_PANEL_PENDING.delete(def.name);
+  }
 }
 
 function buildingExteriorHalfExtents(def) {
@@ -3223,25 +3432,34 @@ function computePanelPose(def) {
   return { x, y, z, face, yaw };
 }
 
-function disposePanelGroup() {
+function releaseActivePanel() {
   if (PP3D.light) {
-    scene.remove(PP3D.light);
-    PP3D.light.dispose();
-    PP3D.light = null;
+    PP3D.light.intensity = 0;
+    PP3D.light.visible = false;
   }
   if (!PP3D.group) return;
-  PP3D.group.traverse(function (obj) {
-    if (!obj.isMesh) return;
-    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-    mats.forEach(function (m) {
-      if (m.map && m.map.userData && m.map.userData.ppOwned) m.map.dispose();
-      m.dispose();
-    });
-    if (obj.geometry) obj.geometry.dispose();
-  });
   scene.remove(PP3D.group);
   PP3D.group = null;
   PP3D.targets = [];
+  PP3D.pose = null;
+}
+
+function disposePanelGroup() {
+  releaseActivePanel();
+  PP_PANEL_CACHE.forEach(function (group) {
+    group.traverse(function (obj) {
+      if (!obj.isMesh) return;
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      mats.forEach(function (m) {
+        if (m.map && m.map.userData && m.map.userData.ppOwned) m.map.dispose();
+        m.dispose();
+      });
+      if (obj.geometry) obj.geometry.dispose();
+    });
+  });
+  PP_PANEL_CACHE.clear();
+  PP_PANEL_PENDING.clear();
+  PP_SCREEN_TEX_CACHE.clear();
 }
 
 function addPanelButton(group, x, y, z, action, label, baseColor, emissiveColor) {
@@ -3301,7 +3519,15 @@ function addPanelButton(group, x, y, z, action, label, baseColor, emissiveColor)
   outerGlow.position.set(0, 0, -0.8);
   body.add(outerGlow);
 
-  PP3D.targets.push({ ppMesh: body, ppAction: action });
+  const hitPad = new THREE.Mesh(
+    new THREE.BoxGeometry(w * 1.65, h * 2.5, d * 2.4),
+    new THREE.MeshBasicMaterial({ visible: false, transparent: true, opacity: 0, depthWrite: false }),
+  );
+  hitPad.userData.ppAction = action;
+  hitPad.userData.ppMat = bodyMat;
+  body.add(hitPad);
+
+  PP3D.targets.push({ ppMesh: hitPad, ppAction: action, ppVisual: body });
   return body;
 }
 
@@ -3309,7 +3535,11 @@ async function buildProjectPanel(def) {
   const meta = getProjectMeta(def.name);
   const g = new THREE.Group();
   g.userData.visitUrl = meta.url;
+  const panelTargets = [];
+  const prevTargets = PP3D.targets;
+  PP3D.targets = panelTargets;
 
+  try {
   const screenW = 32;
   const screenH = 37;
   const screenTex = await makeProjectScreenTex(def, meta);
@@ -3382,8 +3612,13 @@ async function buildProjectPanel(def) {
   addPanelButton(g, 9, btnY, 1.2, 'close', 'SAIR', 0x331a1a, 0xff5544);
 
   g.userData.glow = null;
+  g.userData.ppTargets = panelTargets;
+  g.userData.projectName = def.name;
 
   return g;
+  } finally {
+    PP3D.targets = prevTargets;
+  }
 }
 
 function finishHideProjectPopup() {
@@ -3399,7 +3634,7 @@ function finishHideProjectPopup() {
     PP3D.light.intensity = 0;
     PP3D.light.visible = false;
   }
-  disposePanelGroup();
+  releaseActivePanel();
   input.fireHeld = false;
   document.body.classList.remove('project-popup-open');
   // Resetar o touch DEPOIS de remover project-popup-open, para que o próximo
@@ -3421,31 +3656,10 @@ function hideProjectPopup(animated) {
   finishHideProjectPopup();
 }
 
-async function showProjectPanel3D(def) {
-  if (!def) return;
-  const buildId = ++PP3D.buildId;
-  hideProjectPopup(false);
+function mountProjectPanel(group, def, buildId) {
+  if (buildId !== PP3D.buildId) return;
 
-  projectPopupPendingDef = def;
-  projectPopupOpen = true;
-  PP3D.anim = 0;
-  PP3D.closing = false;
-  PP3D.pose = computePanelPose(def);
-
-  const group = await buildProjectPanel(def);
-  if (buildId !== PP3D.buildId) {
-    group.traverse(function (o) {
-      if (!o.isMesh) return;
-      const mats = Array.isArray(o.material) ? o.material : [o.material];
-      mats.forEach(function (m) {
-        if (m.map && m.map.userData && m.map.userData.ppOwned) m.map.dispose();
-        m.dispose();
-      });
-      if (o.geometry) o.geometry.dispose();
-    });
-    return;
-  }
-
+  PP3D.targets = group.userData.ppTargets || [];
   group.position.set(PP3D.pose.x, PP3D.pose.y - 18, PP3D.pose.z);
   group.traverse(function (o) {
     if (!o.isMesh) return;
@@ -3473,11 +3687,9 @@ async function showProjectPanel3D(def) {
   scene.add(group);
   PP3D.group = group;
 
-  // Luz do painel 3D com pooling: instanciada uma vez e reutilizada
-  // em cada abertura, evitando churn de PointLight / shadow internals.
   if (!PP3D.light) {
     PP3D.light = new THREE.PointLight(0xfff8ee, 0.95, 220, 1.8);
-    PP3D.light.castShadow = false; // mantém custo baixo, efeito é apenas de realce local
+    PP3D.light.castShadow = false;
     scene.add(PP3D.light);
   }
   PP3D.light.visible = true;
@@ -3491,9 +3703,53 @@ async function showProjectPanel3D(def) {
   setPp3dHint('Arraste para mirar · Atirar nos botões');
 }
 
+async function showProjectPanel3D(def) {
+  if (!def) return;
+  const buildId = ++PP3D.buildId;
+
+  if (PP3D.group || projectPopupOpen) {
+    releaseActivePanel();
+    projectPopupOpen = false;
+  }
+
+  projectPopupPendingDef = def;
+  projectPopupOpen = true;
+  PP3D.anim = 0;
+  PP3D.closing = false;
+  PP3D.pose = computePanelPose(def);
+
+  let group = PP_PANEL_CACHE.get(def.name);
+  if (group) {
+    mountProjectPanel(group, def, buildId);
+    return;
+  }
+
+  document.body.classList.add('project-popup-open');
+  setPp3dHint('Abrindo projeto…');
+  await yieldFrame();
+
+  try {
+    group = await ensurePanelCached(def);
+  } catch (_) {
+    projectPopupOpen = false;
+    projectPopupPendingDef = null;
+    document.body.classList.remove('project-popup-open');
+    setPp3dHint('Atire no prédio para abrir o painel');
+    return;
+  }
+
+  if (buildId !== PP3D.buildId) return;
+
+  mountProjectPanel(group, def, buildId);
+}
+
 function showProjectPopup(def) {
   if (!canOpenProjectPopup(def)) return;
-  showProjectPanel3D(def);
+  if (PP_PANEL_CACHE.has(def.name)) {
+    showProjectPanel3D(def);
+  } else {
+    requestAnimationFrame(function () { showProjectPanel3D(def); });
+  }
 }
 
 const _ppRaycaster = new THREE.Raycaster();
@@ -3501,13 +3757,29 @@ const _ppRayOrigin = new THREE.Vector3();
 const _ppRayDir = new THREE.Vector3();
 
 function flashPanelTarget(entry) {
-  if (!entry || !entry.ppMesh) return;
-  const mat = entry.ppMesh.userData.ppMat;
+  if (!entry) return;
+  const mat = (entry.ppVisual && entry.ppVisual.userData.ppMat) ||
+    (entry.ppMesh && entry.ppMesh.userData.ppMat);
   if (mat) {
     mat.emissiveIntensity = 1.8;
     PP3D.hitFlash = 0.28;
     PP3D.hitFlashMesh = mat;
   }
+}
+
+function findPanelEntry(node, hitObject) {
+  for (let j = 0; j < PP3D.targets.length; j++) {
+    const entry = PP3D.targets[j];
+    const mesh = entry.ppMesh;
+    if (!mesh) continue;
+    if (mesh === node || mesh === hitObject) return entry;
+    let p = hitObject;
+    while (p) {
+      if (p === mesh) return entry;
+      p = p.parent;
+    }
+  }
+  return null;
 }
 
 function raycastPanelTargets(ox, oy, oz, dx, dy, dz, maxT) {
@@ -3526,18 +3798,10 @@ function raycastPanelTargets(ox, oy, oz, dx, dy, dz, maxT) {
   if (!hits.length) return { t: maxT, action: null, entry: null };
   const hit = hits[0];
   let node = hit.object;
-  while (node && !node.userData.ppAction && node.parent) node = node.parent;
+  while (node && !node.userData.ppAction) node = node.parent;
   const action = node && node.userData.ppAction;
   if (!action) return { t: maxT, action: null, entry: null };
-  let bestEntry = null;
-  for (let j = 0; j < PP3D.targets.length; j++) {
-    const entry = PP3D.targets[j];
-    if (entry.ppMesh === node || entry.ppMesh === hit.object) {
-      bestEntry = entry;
-      break;
-    }
-  }
-  return { t: hit.distance, action: action, entry: bestEntry };
+  return { t: hit.distance, action: action, entry: findPanelEntry(node, hit.object) };
 }
 
 function handlePanelShot(action) {
@@ -3545,7 +3809,8 @@ function handlePanelShot(action) {
   if (action === 'visit') {
     const meta = getProjectMeta(projectPopupPendingDef.name);
     const url = (PP3D.group && PP3D.group.userData.visitUrl) || meta.url;
-    openProjectUrl(url);
+    const opened = openProjectUrl(url);
+    if (!opened) setPp3dHint('Não foi possível abrir o link — tente novamente');
     hideProjectPopup(true);
     // Após visitar o projeto em uma nova aba, garantimos que, ao voltar
     // para o museu, o pointer lock e os controles sejam retomados.
@@ -3647,6 +3912,9 @@ function galleryNavTick(dt) {
     if (u >= 1) {
       GALLERY.transitioning = false;
       player.pos.set(t.x, t.y, t.z);
+      GALLERY.wheelAccum = 0;
+      GALLERY.wheelArmed = true;
+      schedulePanelWarmup({ includeAll: false });
     }
   } else {
     player.vel.set(0, 0, 0);
@@ -3669,10 +3937,9 @@ function galleryNavTick(dt) {
 
 function setupGalleryScroll() {
   window.addEventListener('wheel', (e) => {
-    if (!worldReady || !GALLERY.enabled) return;
-    e.preventDefault();
-    const dir = e.deltaY < 0 ? 1 : -1;
-    galleryNavigate(dir);
+    if (!GALLERY.enabled) return;
+    if (!worldReady && !RUNTIME.museumLive) return;
+    galleryWheelStep(e);
   }, { passive: false });
 
   if (usesTouchGalleryNav()) return;
@@ -4048,6 +4315,7 @@ async function buildUrbanCity() {
   updatePlayerBox();
   setLoadProgress(100, 'Galeria pronta — 13 projetos para explorar');
   worldReady = true;
+  schedulePanelWarmup({ includeAll: true });
   applyRendererQuality();
   applyShadowQuality();
   onWorldReady();
@@ -4363,6 +4631,7 @@ function playReadyReveal() {
 function enterMuseum() {
   if (!worldReady || lockEl.classList.contains('loading')) return;
   hideMuseumOverlay();
+  schedulePanelWarmup({ includeAll: false });
   if (PLATFORM.pointerLockOk && !PLATFORM.mobile) {
     POINTER_LOOK.suppressUntil = performance.now() + POINTER_LOCK_WARMUP_MS;
     requestAppPointerLock();
@@ -4546,14 +4815,21 @@ function setupGalleryNavTouch() {
 function setupGalleryFire() {
   const btn = document.getElementById('galleryFire');
   if (!btn) return;
-  let lastFireMs = 0;
+  let lastInputMs = 0;
   const fireOnce = (e) => {
+    if (e.type === 'pointerdown' && e.pointerType === 'mouse' && e.button !== 0) return;
     const now = performance.now();
-    if (now - lastFireMs < 220) return;
-    lastFireMs = now;
+    if (now - lastInputMs < 45) return;
+    lastInputMs = now;
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
     fireFromTouchButton(e);
   };
-  btn.addEventListener('pointerdown', fireOnce);
+  if (PLATFORM.touch) {
+    btn.addEventListener('touchstart', fireOnce, { passive: false });
+  } else {
+    btn.addEventListener('pointerdown', fireOnce);
+  }
   btn.addEventListener('touchend', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -5382,7 +5658,9 @@ function spawnTracer(fromX, fromY, fromZ, toX, toY, toZ) {
     t.positions[3] = toX;   t.positions[4] = toY;   t.positions[5] = toZ;
     t.geo.attributes.position.needsUpdate = true;
     t.life = t.max;
-    t.mat.opacity = 1;
+    t.mat.opacity = GALLERY.enabled ? 1 : 0.85;
+    if (GALLERY.enabled) t.mat.color.setHex(0xffe2a0);
+    else t.mat.color.setHex(0xffcc66);
     return;
   }
 }
@@ -5480,6 +5758,42 @@ function rayAabbT(ox, oy, oz, dx, dy, dz, mn, mx) {
 }
 
 // ---------- Firing ----------
+function getGalleryFireCooldown() {
+  return PLATFORM.touch ? 0.08 : 0.12;
+}
+
+function currentFireSpread() {
+  if (projectPopupOpen && PLATFORM.touch) return 0.0006;
+  if (GALLERY.enabled && PLATFORM.touch) return 0.001;
+  return currentSpread() + weapon.recoilKick * 0.5;
+}
+
+let firePulseTimer = null;
+function triggerFireFeedback(opts) {
+  opts = opts || {};
+  if (elCross) {
+    elCross.classList.add('fire-pulse');
+    if (firePulseTimer) clearTimeout(firePulseTimer);
+    firePulseTimer = setTimeout(function () {
+      elCross.classList.remove('fire-pulse');
+    }, 110);
+  }
+  if (elFlash) {
+    elFlash.classList.add('show');
+    setTimeout(function () { elFlash.classList.remove('show'); }, 55);
+  }
+  if (usesTouchFireButton()) {
+    if (elGalleryFire) {
+      elGalleryFire.classList.add('fire-pulse');
+      setTimeout(function () { elGalleryFire.classList.remove('fire-pulse'); }, 120);
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate(12); } catch (_) { /* ok */ }
+    }
+  }
+  if (opts.panelHit) showHitMarker(false);
+}
+
 function currentSpread() {
   let s;
   if (!player.grounded)     s = WEAPON.spreadAir;
@@ -5504,11 +5818,11 @@ function tryFire() {
     if (weapon.ammo <= 0) { tryStartReload(); return; }
   }
 
-  weapon.fireCooldown = GALLERY.enabled ? 0.2 : WEAPON.fireRate;
+  weapon.fireCooldown = GALLERY.enabled ? getGalleryFireCooldown() : WEAPON.fireRate;
   if (!GALLERY.enabled) weapon.ammo--;
 
   // Spread sample (uniform disc, polar coords)
-  const spread = currentSpread() + weapon.recoilKick * 0.5;
+  const spread = currentFireSpread();
   const a = Math.random() * Math.PI * 2;
   const r = Math.sqrt(Math.random()) * spread;
   const sx = Math.cos(a) * r;
@@ -5611,19 +5925,23 @@ function tryFire() {
     showProjectPopup(hitProject);
   }
 
+  const recoilScale = GALLERY.enabled ? (PLATFORM.touch ? 0.58 : 0.45) : 1;
   if (weapon.muzzleFlash) {
-    weapon.muzzleFlashT = weapon.muzzleFlashLife;
+    weapon.muzzleFlashT = weapon.muzzleFlashLife * (GALLERY.enabled ? 1.35 : 1);
     weapon.muzzleFlash.material.opacity = 1;
     weapon.muzzleFlash.rotation.z = Math.random() * Math.PI;
+    weapon.muzzleFlash.scale.setScalar(GALLERY.enabled ? 1.28 : 1);
   }
-  if (weapon.muzzleLight) weapon.muzzleLight.intensity = 4.0;
+  if (weapon.muzzleLight) {
+    weapon.muzzleLight.intensity = GALLERY.enabled ? 5.8 : 4.0;
+  }
 
-  if (!GALLERY.enabled) {
-    weapon.recoilPitch += WEAPON.recoilPitch;
-    weapon.recoilYaw   += (Math.random() - 0.5) * 2 * WEAPON.recoilYawJit;
-    weapon.recoilKick  += WEAPON.recoilKick;
-    if (weapon.recoilKick > 0.18) weapon.recoilKick = 0.18;
-  }
+  weapon.recoilPitch += WEAPON.recoilPitch * recoilScale;
+  weapon.recoilYaw   += (Math.random() - 0.5) * 2 * WEAPON.recoilYawJit * recoilScale;
+  weapon.recoilKick  += WEAPON.recoilKick * recoilScale;
+  if (weapon.recoilKick > 0.18) weapon.recoilKick = 0.18;
+
+  triggerFireFeedback({ panelHit: !!hitPanelAction });
 }
 
 function tryStartReload() {
@@ -5663,11 +5981,15 @@ function updateWeapon(dt) {
     weapon.muzzleFlashT -= dt;
     if (weapon.muzzleFlashT <= 0) {
       weapon.muzzleFlash.material.opacity = 0;
+      weapon.muzzleFlash.scale.setScalar(1);
       if (weapon.muzzleLight) weapon.muzzleLight.intensity = 0;
     } else {
-      const u = weapon.muzzleFlashT / weapon.muzzleFlashLife;
+      const flashLife = weapon.muzzleFlashLife * (GALLERY.enabled ? 1.35 : 1);
+      const u = weapon.muzzleFlashT / flashLife;
       weapon.muzzleFlash.material.opacity = u;
-      if (weapon.muzzleLight) weapon.muzzleLight.intensity = 3.5 * u;
+      if (weapon.muzzleLight) {
+        weapon.muzzleLight.intensity = (GALLERY.enabled ? 5.8 : 3.5) * u;
+      }
     }
   }
   if (input.reloadPressed) { tryStartReload(); input.reloadPressed = false; }
@@ -6127,32 +6449,53 @@ function padGalleryNum(n) {
   return n < 10 ? '0' + n : String(n);
 }
 
+let _lastNavDisabled = null;
 function updateGalleryNavTouchButtons() {
   if (!usesTouchGalleryNav()) return;
-  const prev = document.getElementById('galleryNavPrev');
-  const next = document.getElementById('galleryNavNext');
   const disabled = !worldReady || !GALLERY.enabled || GALLERY.transitioning ||
     projectPopupOpen || PP3D.closing;
-  if (prev) prev.disabled = disabled;
-  if (next) next.disabled = disabled;
+  if (disabled === _lastNavDisabled) return;
+  _lastNavDisabled = disabled;
+  if (elNavPrev) elNavPrev.disabled = disabled;
+  if (elNavNext) elNavNext.disabled = disabled;
 }
+
+const _ggCache = { label: '', shown: -1, total: -1, transitioning: null };
+const _elGgStrong = elGgCount ? elGgCount.querySelector('strong') || (function () {
+  const s = document.createElement('strong'); elGgCount.prepend(s); return s;
+})() : null;
+const _elGgSuffix = (function () {
+  if (!elGgCount) return null;
+  let txt = elGgCount.lastChild;
+  if (!txt || txt.nodeType !== 3) { txt = document.createTextNode(''); elGgCount.appendChild(txt); }
+  return txt;
+})();
 
 function updateGalleryGuide() {
   if (!GALLERY.enabled || !elGgProject) return;
   const total = GALLERY.stations.length;
   const label = getGalleryLabel();
   const shown = GALLERY.index < 0 ? 0 : GALLERY.index + 1;
-  const pct = total > 0 ? (shown / total) * 100 : 0;
 
-  elGgProject.textContent = label;
-  elGgProject.classList.toggle('is-transitioning', GALLERY.transitioning || label === 'Indo…');
-
-  if (elGgCount) {
-    elGgCount.innerHTML = shown > 0
-      ? '<strong>' + padGalleryNum(shown) + '</strong> / ' + padGalleryNum(total)
-      : '<strong>—</strong> / ' + padGalleryNum(total);
+  if (_ggCache.label !== label) {
+    _ggCache.label = label;
+    elGgProject.textContent = label;
   }
-  if (elGgProgress) elGgProgress.style.width = pct + '%';
+
+  const isTransitioning = GALLERY.transitioning || label === 'Indo…';
+  if (_ggCache.transitioning !== isTransitioning) {
+    _ggCache.transitioning = isTransitioning;
+    elGgProject.classList.toggle('is-transitioning', isTransitioning);
+  }
+
+  if (_ggCache.shown !== shown || _ggCache.total !== total) {
+    _ggCache.shown = shown;
+    _ggCache.total = total;
+    if (_elGgStrong) _elGgStrong.textContent = shown > 0 ? padGalleryNum(shown) : '—';
+    if (_elGgSuffix) _elGgSuffix.textContent = ' / ' + padGalleryNum(total);
+    const pct = total > 0 ? (shown / total) * 100 : 0;
+    if (elGgProgress) elGgProgress.style.width = pct + '%';
+  }
   updateGalleryNavTouchButtons();
 }
 const elKills   = document.getElementById('vKills');
@@ -6166,10 +6509,15 @@ const elAmmoPanel = document.getElementById('ammoPanel');
 const elSlotRifle = document.getElementById('slotRifle');
 const elVign    = document.getElementById('vignette');
 const elCross   = document.getElementById('crosshair');
+const elCrossDot = elCross ? elCross.querySelector('.dot') : null;
 const elAds     = document.getElementById('adsOverlay');
 const elHm      = document.getElementById('hitmarker');
 const elKf      = document.getElementById('killFeed');
 const elDead    = document.getElementById('deadScreen');
+const elFlash   = document.getElementById('fireFlash');
+const elGalleryFire = document.getElementById('galleryFire');
+const elNavPrev = document.getElementById('galleryNavPrev');
+const elNavNext = document.getElementById('galleryNavNext');
 document.getElementById('vTick').textContent = TICK_HZ + ' Hz';
 
 let hitMarkerT = 0;
@@ -6224,27 +6572,66 @@ function respawnPlayer() {
   elDead.classList.remove('show');
 }
 
+const _hudCache = {
+  hpPct: -1, hpText: -1, ammo: -1, reserve: -1,
+  ammoLow: false, reloading: false, adsOn: false,
+  vignOpacity: '', dotScale: '',
+  slotActive: false, panelHidden: true,
+};
+
 function updateHUD(dt) {
-  // HP
-  const hpPct = Math.max(0, stats.hp) / stats.maxHp * 100;
-  if (elHpFill) elHpFill.style.width = hpPct.toFixed(1) + '%';
-  if (elHpText) elHpText.textContent = Math.ceil(Math.max(0, stats.hp));
+  const hpVal = Math.ceil(Math.max(0, stats.hp));
+  const hpPctRaw = Math.max(0, stats.hp) / stats.maxHp * 100;
+  const hpPctR = (hpPctRaw + 0.05) | 0;
 
-  if (elSlotRifle) elSlotRifle.classList.add('active');
-  elAmmoPanel.classList.remove('hidden');
+  if (elHpFill && _hudCache.hpPct !== hpPctR) {
+    _hudCache.hpPct = hpPctR;
+    elHpFill.style.width = hpPctRaw.toFixed(1) + '%';
+  }
+  if (elHpText && _hudCache.hpText !== hpVal) {
+    _hudCache.hpText = hpVal;
+    elHpText.textContent = hpVal;
+  }
 
-  elAmmoM.textContent = weapon.ammo;
-  elAmmoR.textContent = '/ ' + weapon.reserve;
-  if (weapon.ammo <= 6) elAmmoM.classList.add('low');
-  else elAmmoM.classList.remove('low');
-  if (weapon.reloading) elAmmoRl.classList.add('show');
-  else elAmmoRl.classList.remove('show');
+  if (elSlotRifle && !_hudCache.slotActive) {
+    _hudCache.slotActive = true;
+    elSlotRifle.classList.add('active');
+  }
+  if (_hudCache.panelHidden) {
+    _hudCache.panelHidden = false;
+    elAmmoPanel.classList.remove('hidden');
+  }
 
-  // Damage vignette
-  if (stats.damageFlash > 0) stats.damageFlash = Math.max(0, stats.damageFlash - dt * 1.6);
-  elVign.style.opacity = stats.damageFlash.toFixed(3);
+  if (_hudCache.ammo !== weapon.ammo) {
+    _hudCache.ammo = weapon.ammo;
+    elAmmoM.textContent = weapon.ammo;
+    const isLow = weapon.ammo <= 6;
+    if (_hudCache.ammoLow !== isLow) {
+      _hudCache.ammoLow = isLow;
+      elAmmoM.classList.toggle('low', isLow);
+    }
+  }
+  if (_hudCache.reserve !== weapon.reserve) {
+    _hudCache.reserve = weapon.reserve;
+    elAmmoR.textContent = '/ ' + weapon.reserve;
+  }
+  if (_hudCache.reloading !== weapon.reloading) {
+    _hudCache.reloading = weapon.reloading;
+    elAmmoRl.classList.toggle('show', weapon.reloading);
+  }
 
-  // Hit marker fade
+  if (stats.damageFlash > 0) {
+    stats.damageFlash = Math.max(0, stats.damageFlash - dt * 1.6);
+    const op = stats.damageFlash.toFixed(3);
+    if (_hudCache.vignOpacity !== op) {
+      _hudCache.vignOpacity = op;
+      elVign.style.opacity = op;
+    }
+  } else if (_hudCache.vignOpacity !== '0') {
+    _hudCache.vignOpacity = '0';
+    elVign.style.opacity = '0';
+  }
+
   if (hitMarkerT > 0) {
     hitMarkerT -= dt;
     if (hitMarkerT <= 0) {
@@ -6253,20 +6640,26 @@ function updateHUD(dt) {
     }
   }
 
-  const dotEl = elCross && elCross.querySelector('.dot');
-  if (dotEl) {
+  if (elCrossDot) {
     const horiz = Math.hypot(player.vel.x, player.vel.z);
     const spread = Math.min(1, horiz / MOVE.maxSpeed) * 0.12
       + (!player.grounded ? 0.08 : 0)
       + weapon.recoilKick * 0.35;
     const s = Math.min(1.18, 1 + spread);
-    dotEl.style.transform = 'scale(' + s.toFixed(2) + ')';
+    const sv = s.toFixed(2);
+    if (_hudCache.dotScale !== sv) {
+      _hudCache.dotScale = sv;
+      elCrossDot.style.transform = 'scale(' + sv + ')';
+    }
   }
 
   const adsOn = weapon.adsBlend > 0.08;
-  elCross.classList.toggle('ads-hidden', adsOn);
-  elAds.classList.toggle('active', adsOn);
-  elAds.setAttribute('aria-hidden', adsOn ? 'false' : 'true');
+  if (_hudCache.adsOn !== adsOn) {
+    _hudCache.adsOn = adsOn;
+    elCross.classList.toggle('ads-hidden', adsOn);
+    elAds.classList.toggle('active', adsOn);
+    elAds.setAttribute('aria-hidden', adsOn ? 'false' : 'true');
+  }
 }
 
 // =========================================
@@ -6307,7 +6700,6 @@ function frame(nowMs) {
   }
   if (steps >= MAX_SUBSTEPS) accumulator = 0;
 
-  updateSkySun();
   updateProjectPanel3D(frameDt);
   if (skyState.dome) skyState.dome.rotation.y += frameDt * 0.0002;
 
@@ -6321,8 +6713,11 @@ function frame(nowMs) {
 
   const adsT = weapon.adsBlend;
   const adsEase = adsT * adsT * (3 - 2 * adsT);
-  camera.fov = WEAPON.fovHip + (WEAPON.fovAds - WEAPON.fovHip) * adsEase;
-  camera.updateProjectionMatrix();
+  const newFov = WEAPON.fovHip + (WEAPON.fovAds - WEAPON.fovHip) * adsEase;
+  if (Math.abs(camera.fov - newFov) > 0.01) {
+    camera.fov = newFov;
+    camera.updateProjectionMatrix();
+  }
 
   const vm = getActiveVM();
   const horiz = Math.hypot(player.vel.x, player.vel.z);
@@ -6372,22 +6767,29 @@ function frame(nowMs) {
     fpsAccT = 0; fpsAccN = 0;
   }
   if (statHudCooldown <= 0) {
-    statHudCooldown = 0.1;
-    elSpeed.textContent  = horiz.toFixed(1) + ' ups';
-    elGround.textContent = player.grounded ? 'true' : 'false';
+    statHudCooldown = 0.15;
+    const speedTxt = GALLERY.enabled
+      ? (GALLERY.transitioning ? 'indo…' : 'parado')
+      : horiz.toFixed(1) + ' ups';
+    if (elSpeed.textContent !== speedTxt) elSpeed.textContent = speedTxt;
+    const grndTxt = player.grounded ? 'true' : 'false';
+    if (elGround.textContent !== grndTxt) elGround.textContent = grndTxt;
     if (GALLERY.enabled) {
+      updateGalleryGuide();
+      const projTxt = getGalleryLabel();
+      if (elProject.textContent !== projTxt) elProject.textContent = projTxt;
       const total = GALLERY.stations.length;
       const shown = GALLERY.index < 0 ? 0 : GALLERY.index + 1;
-      elProject.textContent = getGalleryLabel();
-      elNav.textContent = shown + ' / ' + total;
-      elSpeed.textContent = GALLERY.transitioning ? 'indo…' : 'parado';
-      updateGalleryGuide();
+      const navTxt = shown + ' / ' + total;
+      if (elNav.textContent !== navTxt) elNav.textContent = navTxt;
     } else {
-      elProject.textContent = '—';
-      elNav.textContent = '—';
+      if (elProject.textContent !== '—') elProject.textContent = '—';
+      if (elNav.textContent !== '—') elNav.textContent = '—';
     }
-    elKills.textContent  = stats.kills;
-    elFps.textContent    = fpsShown.toFixed(0);
+    const killTxt = String(stats.kills);
+    if (elKills.textContent !== killTxt) elKills.textContent = killTxt;
+    const fpsTxt = fpsShown.toFixed(0);
+    if (elFps.textContent !== fpsTxt) elFps.textContent = fpsTxt;
   }
 
   } catch (frameErr) {
