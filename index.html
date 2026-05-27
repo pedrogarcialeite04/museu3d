@@ -2919,36 +2919,69 @@ const PP_PANEL_PENDING = new Map();
 const PP_SCREEN_TEX_CACHE = new Map();
 let ppWarmupGen = 0;
 
-function openProjectUrl(url) {
-  if (!url || url === '#') return false;
+function normalizeProjectUrl(url) {
+  if (!url || url === '#') return '';
+  const u = String(url).trim();
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.indexOf('//') === 0) return 'https:' + u;
+  return 'https://' + u.replace(/^\/+/, '');
+}
 
+function openUrlWithAnchor(href) {
   try {
-    const tab = window.open(url, '_blank', 'noopener,noreferrer');
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.referrerPolicy = 'no-referrer';
+    link.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return true;
+  } catch (_) { return false; }
+}
+
+function openUrlWithBlankTab(href) {
+  let tab = null;
+  try {
+    tab = window.open('about:blank', '_blank');
+  } catch (_) { return false; }
+  if (!tab || tab.closed) return false;
+  try { tab.opener = null; } catch (_) { /* ok */ }
+  try {
+    tab.location.replace(href);
+    return true;
+  } catch (_) {
+    try { tab.close(); } catch (_) { /* ok */ }
+    return false;
+  }
+}
+
+function openUrlDirect(href) {
+  try {
+    const tab = window.open(href, '_blank', 'noopener,noreferrer');
     if (tab) {
       try { tab.opener = null; } catch (_) { /* ok */ }
       return true;
     }
-  } catch (_) { /* tenta fallback */ }
+  } catch (_) { /* ok */ }
+  return false;
+}
 
-  if (PLATFORM.touch) {
-    try {
-      const tab = window.open('about:blank', '_blank');
-      if (tab) {
-        try { tab.opener = null; } catch (_) { /* ok */ }
-        tab.location.href = url;
-        return true;
-      }
-    } catch (_) { /* tenta fallback */ }
+function openProjectUrl(url) {
+  const href = normalizeProjectUrl(url);
+  if (!href) return false;
+
+  const mobile = PLATFORM.touch || PLATFORM.mobile;
+  const strategies = mobile
+    ? [openUrlWithAnchor, openUrlWithBlankTab, openUrlDirect]
+    : [openUrlDirect, openUrlWithAnchor, openUrlWithBlankTab];
+
+  for (let i = 0; i < strategies.length; i++) {
+    if (strategies[i](href)) return true;
   }
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  return true;
+  return false;
 }
 
 function setPp3dHint(text) {
@@ -3810,7 +3843,11 @@ function handlePanelShot(action) {
     const meta = getProjectMeta(projectPopupPendingDef.name);
     const url = (PP3D.group && PP3D.group.userData.visitUrl) || meta.url;
     const opened = openProjectUrl(url);
-    if (!opened) setPp3dHint('Não foi possível abrir o link — tente novamente');
+    if (!opened) {
+      setPp3dHint(PLATFORM.mobile
+        ? 'Toque em ENTRAR de novo ou abra no navegador externo'
+        : 'Não foi possível abrir o link — tente novamente');
+    }
     hideProjectPopup(true);
     // Após visitar o projeto em uma nova aba, garantimos que, ao voltar
     // para o museu, o pointer lock e os controles sejam retomados.
@@ -4757,8 +4794,9 @@ function setupTouchLook() {
 
     if (t) {
       const moved = Math.hypot(t.clientX - TOUCH_LOOK.startX, t.clientY - TOUCH_LOOK.startY);
-      if (TOUCH_LOOK.active && !TOUCH_LOOK.navClaimed && !usesTouchFireButton() &&
-          moved < 14 && worldReady && !projectPopupOpen) {
+      if (TOUCH_LOOK.active && !TOUCH_LOOK.navClaimed &&
+          moved < 14 && worldReady &&
+          (!usesTouchFireButton() || projectPopupOpen)) {
         input.fireHeld = true;
         tryFire();
         input.fireHeld = false;
@@ -4818,6 +4856,7 @@ function setupGalleryFire() {
   let lastInputMs = 0;
   const fireOnce = (e) => {
     if (e.type === 'pointerdown' && e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.type === 'pointerdown' && e.pointerType === 'touch') return;
     const now = performance.now();
     if (now - lastInputMs < 45) return;
     lastInputMs = now;
@@ -4827,6 +4866,7 @@ function setupGalleryFire() {
   };
   if (PLATFORM.touch) {
     btn.addEventListener('touchstart', fireOnce, { passive: false });
+    btn.addEventListener('pointerdown', fireOnce);
   } else {
     btn.addEventListener('pointerdown', fireOnce);
   }
